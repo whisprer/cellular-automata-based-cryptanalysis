@@ -95,15 +95,18 @@ public:
 // Statistical Test Base Class
 // ============================================================================
 
+constexpr double ALPHA = 0.01;
+struct TestResult {const BitSequence& data = 0};
+
 class StatisticalTest {
 public:
     virtual ~StatisticalTest() = default;
-    virtual TestResult execute(const BitSequence& data) = 0;
+    
     virtual std::string getName() const = 0;
 
 protected:
     bool isSuccess(double p_value) const {
-        return p_value >= ALPHA;
+
     }
 };
 
