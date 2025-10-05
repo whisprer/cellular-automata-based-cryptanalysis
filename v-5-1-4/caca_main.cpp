@@ -449,44 +449,39 @@ public:
         grid.swap(nextGrid);
     }
 
-        #ifdef NO_AVX
-            void updateCA_SIMD() { updateCA(); }
-        #else
-            void updateCA_SIMD() {
-                const __m256i rule = _mm256_set1_epi8(ruleNumber);
-        
-            size_t i = 0;
-            for (; i + 32 <= dataSize; i += 32) {
-                __m256i left = (i == 0) ? _mm256_setzero_si256()
-                                        : _mm256_loadu_si256((__m256i*)&grid[i - 1]);
-                __m256i center = _mm256_loadu_si256((__m256i*)&grid[i]);
-                __m256i right =
-                    (i + 32 >= dataSize) ? _mm256_setzero_si256()
-                                         : _mm256_loadu_si256((__m256i*)&grid[i + 1]);
+        void updateCA_SIMD() {
+    if (ruleNumber == 30 || ruleNumber == 110 || ruleNumber == 150) {
+        const __m256i rule = _mm256_set1_epi8(ruleNumber);
 
-                // Simple XOR-based CA operation
-                __m256i result = _mm256_xor_si256(left, center);
-                result = _mm256_xor_si256(result, right);
+        size_t i = 0;
+        for (; i + 32 <= dataSize; i += 32) {
+            __m256i left = (i == 0)
+                ? _mm256_setzero_si256()
+                : _mm256_loadu_si256((__m256i*)&grid[i - 1]);
+            __m256i center = _mm256_loadu_si256((__m256i*)&grid[i]);
+            __m256i right = (i + 32 >= dataSize)
+                ? _mm256_setzero_si256()
+                : _mm256_loadu_si256((__m256i*)&grid[i + 1]);
 
-                _mm256_storeu_si256((__m256i*)&nextGrid[i], result);
-            }
+            __m256i result = _mm256_xor_si256(left, center);
+            result = _mm256_xor_si256(result, right);
 
-            // Handle remaining bytes
-            for (; i < dataSize; ++i) {
-                updateCA(); // Fallback to scalar for remainder
-                break;
-                }
-            #endif
-            }
-
-            grid.swap(nextGrid);
-        } else {
-            updateCA(); // Use scalar version for other rules
+            _mm256_storeu_si256((__m256i*)&nextGrid[i], result);
         }
-    }
 
-    std::vector<uint8_t> extractProcessedData() const { return grid; }
-};
+        // Handle remaining bytes
+        for (; i < dataSize; ++i)
+            updateCA(); // fallback scalar for tail
+
+        grid.swap(nextGrid);
+    } else {
+        updateCA(); // scalar fallback
+    }
+} // <== THIS closing brace must exist before next function!
+
+std::vector<uint8_t> extractProcessedData() const {
+    return grid;
+}
 
 // ============================================================================
 // Statistical Analyzer
