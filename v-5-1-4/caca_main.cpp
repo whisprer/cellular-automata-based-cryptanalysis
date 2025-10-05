@@ -12,33 +12,36 @@
 #include <cmath>
 #include <complex>
 #include <random>
-#include <chrono>
 #include <iomanip>
 #include <bitset>
 #include <numeric>
 #include <array>
 #include <cstdint>
 #include <immintrin.h>
+#include <chrono>
+#include <utility>
+#include <functional>
 
 // Define M_PI if not defined (Windows compatibility)
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
-namespace nist_sts {
+namespace caca::util {
 
-// ============================================================================
-// Core Data Structures
-// ============================================================================
+template <typename Func, typename... Args>
+auto benchmark(Func&& func, Args&&... args) {
+    auto start = std::chrono::high_resolution_clock::now();
 
-constexpr double ALPHA = 0.01;  // Significance level for NIST tests
+    std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
 
-struct TestResult {
-    std::string testName;
-    double p_value = 0.0;
-    bool success = false;
-    std::map<std::string, double> statistics;
-}; // <<<<<<<<<<<<<<<<<<<<<<<< missing semicolon fixed
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    return duration.count();
+}
+
+} // namespace caca::util
 
 // ============================================================================
 // BitSequence - Core bit manipulation class
