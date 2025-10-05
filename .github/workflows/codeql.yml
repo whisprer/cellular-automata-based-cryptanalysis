@@ -22,6 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          ls -R ..
           - language: "c-cpp"
             build-mode: manual
           - language: "actions"
@@ -41,7 +42,7 @@ jobs:
       # 👇 NEW STEP: This is the missing piece
       - name: Build project (manual build for CodeQL)
         if: matrix.language == 'c-cpp'
-        run: make clean && make -j$(nproc)
+        run: |
           mkdir -p build
           cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release
