@@ -4,13 +4,13 @@ project(caca LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Gather all source files recursively
+# Adjust this path depending on where your .cpp files actually live:
 file(GLOB_RECURSE SRC_FILES
-    ${PROJECT_SOURCE_DIR}/src/*.cpp
+    ${CMAKE_SOURCE_DIR}/v-5-1-4/*.cpp
 )
 
-# Build the executable
-add_executable(caca_app ${SRC_FILES})
+if(NOT SRC_FILES)
+    message(FATAL_ERROR "No source files found! Check your file paths.")
+endif()
 
-# Optional include dirs
-# target_include_directories(caca_app PRIVATE ${PROJECT_SOURCE_DIR}/include)
+add_executable(caca_app ${SRC_FILES})
