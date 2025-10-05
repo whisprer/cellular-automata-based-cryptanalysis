@@ -449,11 +449,12 @@ public:
         grid.swap(nextGrid);
     }
 
-    void updateCA_SIMD() {
-        // SIMD optimized version for supported rules
-        if (ruleNumber == 30 || ruleNumber == 110 || ruleNumber == 150) {
-            const __m256i rule = _mm256_set1_epi8(ruleNumber);
-
+        #ifdef NO_AVX
+            void updateCA_SIMD() { updateCA(); }
+        #else
+            void updateCA_SIMD() {
+                const __m256i rule = _mm256_set1_epi8(ruleNumber);
+        
             size_t i = 0;
             for (; i + 32 <= dataSize; i += 32) {
                 __m256i left = (i == 0) ? _mm256_setzero_si256()
@@ -474,6 +475,8 @@ public:
             for (; i < dataSize; ++i) {
                 updateCA(); // Fallback to scalar for remainder
                 break;
+                }
+            #endif
             }
 
             grid.swap(nextGrid);
