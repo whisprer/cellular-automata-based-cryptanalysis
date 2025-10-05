@@ -479,9 +479,10 @@ public:
     }
 } // <== THIS closing brace must exist before next function!
 
-std::vector<uint8_t> extractProcessedData() const {
-    return grid;
-}
+    std::vector<uint8_t> extractProcessedData() const {
+        return grid;
+    }
+}; // <== VERY IMPORTANT — this closes the class!
 
 // ============================================================================
 // Statistical Analyzer
