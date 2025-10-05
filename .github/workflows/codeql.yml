@@ -1,6 +1,3 @@
-# For CACA, this workflow scans C++ code and GitHub Actions for security issues.
-# Commit to your repository to enable scanning; adjust languages or build logic as needed.
-#
 name: "CodeQL Advanced"
 
 on:
@@ -25,26 +22,32 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - language: "c-cpp"
-          build-mode: manual
-        - language: "actions"
-          build-mode: none
-        # Focus on C++ for CACA; 'actions' covers workflow security.
-        # Remove other languages unless added later.
+          - language: "c-cpp"
+            build-mode: manual
+          - language: "actions"
+            build-mode: none
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
-        build-mode: ${{ matrix.build-mode }}
-        # Add custom queries for cryptanalysis security (e.g., buffer overflows, memory issues).
-        queries: +security-and-quality
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: +security-and-quality
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:${{matrix.language}}"
+      # 👇 NEW STEP: This is the missing piece
+      - name: Build project (manual build for CodeQL)
+        if: matrix.language == 'c-cpp'
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+          make -j$(nproc)
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
